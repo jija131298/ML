@@ -1,0 +1,35 @@
+import pandas as pd
+#1 Прочтите данные из файла data.csv
+data = pd.read_csv('data_full.csv', delimiter=',')
+print(data)
+#2 Выведите описание прочтенных данных.
+print(data.describe())
+#3 Отобразите несколько первых и несколько последних записей.
+print(data.head(4))
+data.tail(4)
+#4 Прочтите в файле DataDictionary-ru.txt, что означают столбцы матрицы. Какому типу принадлежит каждый столбец (вещественный, целый, категориальный)?
+f = open('DataDictionary-ru.txt', mode="r", encoding="utf-8")
+while True:
+    column = f.readline()
+    description = f.readline()
+    f.readline()
+    if column == '':
+        break
+    print(column.strip() + ': ' + description)
+
+#5 Заметьте, что столбец DebtRatio содержит неправдоподобные данные. Только значения, соответствующие известному месячному доходу, являются отношениями. Остальные – абсолютные значения месячных выплат процентов.
+#Исправьте данные, сделав все значения столбца DebtRatio абсолютными (умножьте их на MonthlyIncome). Чтобы ваша программа быстро работала на полных данных, постарайтесь не использовать цикл.
+data['DebtRatio'][data['MonthlyIncome'].notnull()] = data['DebtRatio'][data['MonthlyIncome'].notnull()] * data['MonthlyIncome'][data['MonthlyIncome'].notnull()]
+#6Поменяйте имя столбца на Debt.
+data.rename(columns={'DebtRatio': 'Debt'}, inplace=True)
+#7 Вычислите средний ежемесячный доход и присвойте всем клиентам с неизвестным доходом полученное число.
+mean_income = data['MonthlyIncome'].mean()
+data['MonthlyIncome'][data['MonthlyIncome'].isnull()] = mean_income
+#8 Используя метод groupby, оцените вероятности невозврата кредита (SeriousDlqin2yrs=1) для различных значений количества иждивенцев (NumberOfDependents).
+print(data['SeriousDlqin2yrs'].groupby(data['NumberOfDependents']).mean())
+
+import matplotlib.pyplot as plt
+#9a Постройте график рассеяния на осях age и Debt. Cиним отметьте клиентов без серьезных задолженностей (SeriousDlqin2yrs = 0) и красным — должников (SeriousDlqin2yrs = 1).
+plt.scatter(data['age'][data['SeriousDlqin2yrs'] == 0], data['Debt'][data['SeriousDlqin2yrs'] == 0], c='tab:blue')
+plt.scatter(data['age'][data['SeriousDlqin2yrs'] == 1], data['Debt'][data['SeriousDlqin2yrs'] == 1], c='tab:red')
+plt.show()
